@@ -40,3 +40,5 @@ new BackendCICD(
     },
   },
 );
+
+app.synth();
