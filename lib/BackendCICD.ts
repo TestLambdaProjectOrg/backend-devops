@@ -112,7 +112,7 @@ class BackendCICDPipeline extends cdk.Stack {
         });
 
         // Deployment - Preproduction
-        const templateArtifactPathPPD = testBackendBuildOutputPPD.atPath(
+        const templateArtifactPathPPD = cdkBuildOutputPPD.atPath(
             // eslint-disable-next-line max-len
             `${BackendStack.STACK_NAME}${Environment.PPD}.template.json`,
         );
