@@ -62,23 +62,13 @@ class BackendCICDPipeline extends cdk.Stack {
         });
 
         // CDK Pipeline Stack - Preproduction
-        const cdkBuildOutputPPD = new Artifact('CdkBuildOutputPPD');
-        const cdkBuildProjectPPD = this.getCdkBuild(Environment.PPD);
-        const cdkBuildActionPPD = new CodeBuildAction({
-            actionName: 'CDKPPD_BuildAction',
-            project: cdkBuildProjectPPD,
+        const cdkBuildOutput = new Artifact('CdkBuildOutput');
+        const cdkBuildProject = this.getCdkBuild();
+        const cdkBuildAction = new CodeBuildAction({
+            actionName: 'CDK_BuildAction',
+            project: cdkBuildProject,
             input: cdkSourceOutput,
-            outputs: [cdkBuildOutputPPD],
-        });
-
-        // CDK Pipeline Stack - Production
-        const cdkBuildOutputPRD = new Artifact('CdkBuildOutputPRD');
-        const cdkBuildProjectPRD = this.getCdkBuild(Environment.PRD);
-        const cdkBuildActionPRD = new CodeBuildAction({
-            actionName: 'CDKPRD_BuildAction',
-            project: cdkBuildProjectPRD,
-            input: cdkSourceOutput,
-            outputs: [cdkBuildOutputPRD],
+            outputs: [cdkBuildOutput],
         });
 
         // TestBackend Lambda Stack - Preproduction
@@ -112,7 +102,7 @@ class BackendCICDPipeline extends cdk.Stack {
         });
 
         // Deployment - Preproduction
-        const templateArtifactPathPPD = cdkBuildOutputPPD.atPath(
+        const templateArtifactPathPPD = cdkBuildOutput.atPath(
             // eslint-disable-next-line max-len
             `${BackendStack.STACK_NAME}${Environment.PPD}.template.json`,
         );
@@ -124,7 +114,7 @@ class BackendCICDPipeline extends cdk.Stack {
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PPD}`,
             adminPermissions: true,
-            extraInputs: [cdkBuildOutputPPD, testBackendBuildOutputPPD],
+            extraInputs: [cdkBuildOutput, testBackendBuildOutputPPD],
         });
 
         // Deployment - Production
@@ -140,7 +130,7 @@ class BackendCICDPipeline extends cdk.Stack {
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PRD}`,
             adminPermissions: true,
-            extraInputs: [cdkBuildOutputPRD, testBackendBuildOutputPRD],
+            extraInputs: [cdkBuildOutput, testBackendBuildOutputPRD],
         });
 
         const pipeline = new Pipeline(this, 'BackendCICDPipeline', {
@@ -154,10 +144,15 @@ class BackendCICDPipeline extends cdk.Stack {
                     ],
                 },
                 {
+                    stageName: 'Build-CDK',
+                    actions: [
+                        cdkBuildAction,
+                    ],
+                },
+                {
                     stageName: 'Build-PPD',
                     actions: [
                         testBackendBuildActionPPD,
-                        cdkBuildActionPPD,
                     ],
                 },
                 {
@@ -176,7 +171,6 @@ class BackendCICDPipeline extends cdk.Stack {
                     stageName: 'Build-PRD',
                     actions: [
                         testBackendBuildActionPRD,
-                        cdkBuildActionPRD,
                     ],
                 },
                 {
@@ -189,7 +183,7 @@ class BackendCICDPipeline extends cdk.Stack {
         });
     }
 
-    private getCdkBuild(appEnv: Environment): PipelineProject {
+    private getCdkBuild(): PipelineProject {
         const buildSpec = BuildSpec.fromObject({
             version: '0.2',
             phases: {
@@ -207,22 +201,18 @@ class BackendCICDPipeline extends cdk.Stack {
                 'base-directory': 'dist',
                 files: [
                     // eslint-disable-next-line max-len
-                    `${BackendStack.STACK_NAME}${appEnv}.template.json`,
+                    `${BackendStack.STACK_NAME}${Environment.PPD}.template.json`,
+                    // eslint-disable-next-line max-len
+                    `${BackendStack.STACK_NAME}${Environment.PRD}.template.json`,
                 ],
             },
         });
 
         const environment: BuildEnvironment = {
             buildImage: LinuxBuildImage.STANDARD_5_0,
-            environmentVariables: {
-                APP_ENV: {
-                    value: appEnv,
-                    type: BuildEnvironmentVariableType.PLAINTEXT,
-                },
-            },
         };
 
-        return new PipelineProject(this, `CDKBuildProject${appEnv}`, {
+        return new PipelineProject(this, `CDKBuildProject`, {
             buildSpec,
             environment,
         });
