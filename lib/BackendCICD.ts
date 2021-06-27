@@ -32,11 +32,11 @@ class BackendCICDPipeline extends cdk.Stack {
     constructor(
         scope: cdk.Construct,
         id: string,
-        props?: BackendCICDPipelineProps,
+        props: BackendCICDPipelineProps,
     ) {
         super(scope, id, props);
 
-        // const { ppdStack, prdStack } = props;
+        const { ppdStack, prdStack } = props;
 
         // Source code - Github
         const lambdaSourceOutput = new Artifact();
@@ -120,7 +120,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy',
             templatePath: templateArtifactPathPPD,
             parameterOverrides: {
-                // ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
+                ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PPD}`,
             adminPermissions: true,
@@ -136,7 +136,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy',
             templatePath: templateArtifactPathPRD,
             parameterOverrides: {
-                // ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
+                ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PRD}`,
             adminPermissions: true,
