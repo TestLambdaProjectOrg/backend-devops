@@ -124,7 +124,7 @@ class BackendCICDPipeline extends cdk.Stack {
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PPD}`,
             adminPermissions: true,
-            extraInputs: [testBackendBuildOutputPPD],
+            extraInputs: [cdkBuildOutputPPD, testBackendBuildOutputPPD],
         });
 
         // Deployment - Production
@@ -140,7 +140,7 @@ class BackendCICDPipeline extends cdk.Stack {
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PRD}`,
             adminPermissions: true,
-            extraInputs: [testBackendBuildOutputPRD],
+            extraInputs: [cdkBuildOutputPRD, testBackendBuildOutputPRD],
         });
 
         const pipeline = new Pipeline(this, 'BackendCICDPipeline', {
