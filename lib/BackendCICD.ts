@@ -107,7 +107,7 @@ class BackendCICDPipeline extends cdk.Stack {
             `${BackendStack.STACK_NAME}${Environment.PPD}.template.json`,
         );
         const deployActionPPD = new CloudFormationCreateUpdateStackAction({
-            actionName: 'TestBackend_Cfn_Deploy',
+            actionName: 'TestBackend_Cfn_Deploy_Preproduction',
             templatePath: templateArtifactPathPPD,
             parameterOverrides: {
                 ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
@@ -118,12 +118,12 @@ class BackendCICDPipeline extends cdk.Stack {
         });
 
         // Deployment - Production
-        const templateArtifactPathPRD = testBackendBuildOutputPRD.atPath(
+        const templateArtifactPathPRD = cdkBuildOutput.atPath(
             // eslint-disable-next-line max-len
             `${BackendStack.STACK_NAME}${Environment.PRD}.template.json`,
         );
         const deployActionPRD = new CloudFormationCreateUpdateStackAction({
-            actionName: 'TestBackend_Cfn_Deploy',
+            actionName: 'TestBackend_Cfn_Deploy_Production',
             templatePath: templateArtifactPathPRD,
             parameterOverrides: {
                 ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
