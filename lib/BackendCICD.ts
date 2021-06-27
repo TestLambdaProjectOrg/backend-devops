@@ -86,7 +86,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const testBackendBuildProjectPPD = this.getGoLambdaBuild(
             Environment.PPD,
             'TestBackend',
-            '',
+            '.',
             'testbackend',
         );
         const testBackendBuildActionPPD = new CodeBuildAction({
@@ -101,7 +101,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const testBackendBuildProjectPRD = this.getGoLambdaBuild(
             Environment.PRD,
             'TestBackend',
-            '',
+            '.',
             'testbackend',
         );
         const testBackendBuildActionPRD = new CodeBuildAction({
