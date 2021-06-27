@@ -32,21 +32,32 @@ class BackendCICDPipeline extends cdk.Stack {
     constructor(
         scope: cdk.Construct,
         id: string,
-        props: BackendCICDPipelineProps,
+        props?: BackendCICDPipelineProps,
     ) {
         super(scope, id, props);
-    
-        const { ppdStack, prdStack } = props;
+
+        // const { ppdStack, prdStack } = props;
 
         // Source code - Github
-        const sourceOutput = new Artifact();
+        const lambdaSourceOutput = new Artifact();
         const codeStarAction = new CodeStarConnectionsSourceAction({
             actionName: 'CheckoutFromGithub',
             // eslint-disable-next-line max-len
             connectionArn: 'arn:aws:codestar-connections:us-east-1:502192330072:connection/8dafd691-9f69-4553-a212-735cb6810389',
-            output: sourceOutput,
+            output: lambdaSourceOutput,
             owner: 'TestLambdaProjectOrg',
             repo: 'backend',
+            branch: 'main',
+        });
+
+        const cdkSourceOutput = new Artifact();
+        const cdkCodeStarAction = new CodeStarConnectionsSourceAction({
+            actionName: 'CheckoutFromGithub',
+            // eslint-disable-next-line max-len
+            connectionArn: 'arn:aws:codestar-connections:us-east-1:502192330072:connection/8dafd691-9f69-4553-a212-735cb6810389',
+            output: cdkSourceOutput,
+            owner: 'TestLambdaProjectOrg',
+            repo: 'backend-devops',
             branch: 'main',
         });
 
@@ -56,7 +67,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const cdkBuildActionPPD = new CodeBuildAction({
             actionName: 'CDKPPD_BuildAction',
             project: cdkBuildProjectPPD,
-            input: sourceOutput,
+            input: cdkSourceOutput,
             outputs: [cdkBuildOutputPPD],
         });
 
@@ -66,7 +77,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const cdkBuildActionPRD = new CodeBuildAction({
             actionName: 'CDKPRD_BuildAction',
             project: cdkBuildProjectPRD,
-            input: sourceOutput,
+            input: cdkSourceOutput,
             outputs: [cdkBuildOutputPRD],
         });
 
@@ -81,7 +92,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const testBackendBuildActionPPD = new CodeBuildAction({
             actionName: 'TestBackendPPD_BuildAction',
             project: testBackendBuildProjectPPD,
-            input: sourceOutput,
+            input: lambdaSourceOutput,
             outputs: [testBackendBuildOutputPPD],
         });
 
@@ -96,7 +107,7 @@ class BackendCICDPipeline extends cdk.Stack {
         const testBackendBuildActionPRD = new CodeBuildAction({
             actionName: 'TestBackend_BuildAction',
             project: testBackendBuildProjectPRD,
-            input: sourceOutput,
+            input: lambdaSourceOutput,
             outputs: [testBackendBuildOutputPRD],
         });
 
@@ -109,7 +120,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy',
             templatePath: templateArtifactPathPPD,
             parameterOverrides: {
-                ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
+                // ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PPD}`,
             adminPermissions: true,
@@ -125,7 +136,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy',
             templatePath: templateArtifactPathPRD,
             parameterOverrides: {
-                ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
+                // ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PRD}`,
             adminPermissions: true,
@@ -139,6 +150,7 @@ class BackendCICDPipeline extends cdk.Stack {
                     stageName: 'Source',
                     actions: [
                         codeStarAction,
+                        cdkCodeStarAction,
                     ],
                 },
                 {
@@ -155,7 +167,7 @@ class BackendCICDPipeline extends cdk.Stack {
                         new ManualApprovalAction({
                             actionName: 'DeployBackendToProductionApproval',
                             additionalInformation: 'Ready to deploy to Production?',
-                            externalEntityLink: ppdStack.apiURL,
+                            // externalEntityLink: ppdStack.apiURL,
                             runOrder: 2,
                         }),
                     ],
@@ -174,7 +186,7 @@ class BackendCICDPipeline extends cdk.Stack {
                     ],
                 },
             ],
-          });
+        });
     }
 
     private getCdkBuild(appEnv: Environment): PipelineProject {
@@ -199,7 +211,7 @@ class BackendCICDPipeline extends cdk.Stack {
                 ],
             },
         });
-    
+
         const environment: BuildEnvironment = {
             buildImage: LinuxBuildImage.STANDARD_5_0,
             environmentVariables: {
@@ -209,7 +221,7 @@ class BackendCICDPipeline extends cdk.Stack {
                 },
             },
         };
-    
+
         return new PipelineProject(this, `CDKBuildProject${appEnv}`, {
             buildSpec,
             environment,
@@ -221,7 +233,7 @@ class BackendCICDPipeline extends cdk.Stack {
         lambdaFnName: string,
         baseDirectory: string,
         outputFileName: string,
-        variables: {[index: string]: BuildEnvironmentVariable} = {},
+        variables: { [index: string]: BuildEnvironmentVariable } = {},
     ): PipelineProject {
         const buildSpec = BuildSpec.fromObject({
             version: '0.2',
@@ -245,7 +257,7 @@ class BackendCICDPipeline extends cdk.Stack {
                 ],
             },
         });
-    
+
         const environmentVariables = {
             APP_ENV: {
                 value: appEnv,

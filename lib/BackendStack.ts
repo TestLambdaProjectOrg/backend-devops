@@ -20,8 +20,8 @@ class BackendStack extends cdk.Stack {
   public testBackendHandlerCode: CfnParametersCode;
 
   constructor(
-    scope: cdk.Construct, 
-    id: string, 
+    scope: cdk.Construct,
+    id: string,
     props: BackendStackProps
   ) {
     super(scope, id, props);
@@ -29,7 +29,7 @@ class BackendStack extends cdk.Stack {
     this.appEnv = props.appEnv;
 
     this.testBackendHandlerCode = Code.fromCfnParameters();
-    
+
     const testBackend = new Function(
       this,
       `TestBackendHandler${this.appEnv}`,
@@ -42,7 +42,7 @@ class BackendStack extends cdk.Stack {
         },
       },
     );
-    
+
     const testBackendIntegration = new LambdaProxyIntegration({
       handler: testBackend,
     });
@@ -67,9 +67,9 @@ class BackendStack extends cdk.Stack {
     this.cfnOutputAPI = new cdk.CfnOutput(
       this,
       `TestBackendAPI${this.appEnv}`, {
-        value: this.httpApi.url!,
-        exportName: `TestBackendAPIEndpoint${this.appEnv}`,
-      },
+      value: this.httpApi.url!,
+      exportName: `TestBackendAPIEndpoint${this.appEnv}`,
+    },
     );
   }
 }
