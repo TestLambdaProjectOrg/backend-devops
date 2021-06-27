@@ -50,7 +50,7 @@ class BackendStack extends cdk.Stack {
     this.httpApi = new HttpApi(this, `BackendHttpAPI${this.appEnv}`, {
       corsPreflight: {
         allowOrigins: ['*'],
-        allowMethods: [CorsHttpMethod.GET],
+        allowMethods: [CorsHttpMethod.ANY],
       },
       apiName: 'test-backend-api',
       createDefaultStage: true,
@@ -59,7 +59,7 @@ class BackendStack extends cdk.Stack {
     this.httpApi.addRoutes({
       path: '/',
       methods: [
-        HttpMethod.GET,
+        HttpMethod.POST,
       ],
       integration: testBackendIntegration,
     });
