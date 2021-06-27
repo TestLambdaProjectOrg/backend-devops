@@ -52,7 +52,7 @@ class BackendCICDPipeline extends cdk.Stack {
 
         const cdkSourceOutput = new Artifact();
         const cdkCodeStarAction = new CodeStarConnectionsSourceAction({
-            actionName: 'CheckoutFromGithub',
+            actionName: 'CDKCodeFromGithub',
             // eslint-disable-next-line max-len
             connectionArn: 'arn:aws:codestar-connections:us-east-1:502192330072:connection/8dafd691-9f69-4553-a212-735cb6810389',
             output: cdkSourceOutput,
