@@ -110,7 +110,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy_Preproduction',
             templatePath: templateArtifactPathPPD,
             parameterOverrides: {
-                ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
+                // ...ppdStack.lambdaCode.assign(testBackendBuildOutputPPD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PPD}`,
             adminPermissions: true,
@@ -126,7 +126,7 @@ class BackendCICDPipeline extends cdk.Stack {
             actionName: 'TestBackend_Cfn_Deploy_Production',
             templatePath: templateArtifactPathPRD,
             parameterOverrides: {
-                ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
+                // ...prdStack.lambdaCode.assign(testBackendBuildOutputPRD.s3Location),
             },
             stackName: `${BackendStack.STACK_NAME}${Environment.PRD}`,
             adminPermissions: true,
